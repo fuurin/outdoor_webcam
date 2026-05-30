@@ -1,0 +1,112 @@
+# パーツ選定メモ
+
+## 目的
+
+キャンプ場向けオフグリッド LTE カメラ端末に必要な主要パーツを比較・選定するためのメモ。ここに記載する候補は初期調査用であり、最終採用前にデータシート、国内認証、入手性、キャリア対応、実測消費電力を確認する。
+
+## 選定対象
+
+- マイコン / SBC
+- LTE/4G 通信モジュール
+- SIM スロット / eSIM
+- カメラモジュール
+- 電源制御基板
+- バッテリー
+- ソーラーパネル / 充電回路
+- 防水筐体 / アンテナ / ケーブルグランド
+- センサー類（電池電圧、温度、照度など）
+
+## 評価基準
+
+| 項目 | 重み | 確認内容 |
+| --- | --- | --- |
+| 低消費電力 | 高 | deep sleep 電流、通信時ピーク電流、電源断制御のしやすさ |
+| LTE 対応 | 高 | 国内キャリア対応バンド、LTE-M/Cat 1/Cat 4、技適/認証、アンテナ |
+| 画像品質 | 中 | 解像度、画角、HDR、暗所性能、固定焦点/AF |
+| 実装容易性 | 中 | SDK、サンプル、Linux 利用可否、TLS/S3 対応 |
+| 屋外耐性 | 高 | 温度範囲、防水筐体との相性、結露対策 |
+| 入手性 | 高 | 国内購入可否、長期供給、代替品 |
+| コスト | 中 | 端末単価、通信費、電池/保守費 |
+
+## マイコン / SBC 候補
+
+| 候補 | 特徴 | 懸念 | 初期評価 |
+| --- | --- | --- | --- |
+| ESP32-S3 系カメラボード | 低消費電力寄りでカメラ接続例が多い。小型で電源制御しやすい。 | S3 直送や HTTPS/TLS、画像バッファ、LTE 制御の実装難度を確認する必要がある。 | 低消費電力重視の第一候補 |
+| Raspberry Pi Zero 2 W + カメラ | Linux が使え、S3/Slack 連携や画像処理が容易。公式カメラ資産が豊富。 | 待機電力と起動時間がマイコンより不利。Wi-Fi は使わないため不要機能が多い。 | PoC しやすいが長期電池運用は要実測 |
+| STM32 / nRF52 + 外付けカメラ | 低消費電力設計に強い。 | カメラ、LTE、TLS、S3 連携の実装負荷が高い。 | 量産・専用設計向け |
+
+## LTE/4G 通信モジュール候補
+
+| 候補 | 特徴 | 懸念 | 確認タスク |
+| --- | --- | --- | --- |
+| Quectel BG95 系 | LTE Cat M1 / Cat NB2 / EGPRS、GNSS 統合、低消費電力用途向け。 | 画像アップロードに十分な実効速度か確認が必要。キャリア対応とファーム入手性を確認する。 | キャリアバンド、PSM/eDRX、HTTPS/MQTT/TLS、国内認証 |
+| SIMCom SIM7600 系 | LTE Cat 1 系で画像アップロードに余裕を持ちやすい。 | LTE-M より消費電力が大きくなる可能性。ピーク電流と対応バンドを確認する。 | 消費電流、S3 送信方式、対応キャリア、技適 |
+| LTE USB ドングル / HAT | Raspberry Pi PoC で使いやすい。 | 屋外・低消費電力・長期供給には不向きな場合がある。 | 起動時間、再接続性、Linux ドライバ |
+
+## カメラ候補
+
+| 候補 | 特徴 | 懸念 | 初期評価 |
+| --- | --- | --- | --- |
+| OV2640/OV5640 系 | ESP32 系で利用例が多く、低解像度〜中解像度の JPEG 撮影に向く。 | 画質、暗所性能、屋外の逆光耐性を確認する。 | 低消費電力 PoC 向け |
+| Raspberry Pi Camera Module 3 | 12MP クラス、AF/HDR などを活用しやすい。 | Raspberry Pi 前提になり、電力面で不利な可能性。 | 画質検証・PoC 向け |
+| Arducam 系 CSI/USB カメラ | センサーやレンズの選択肢が多い。 | ドライバ、互換性、消費電力、筐体固定方法を確認する。 | 画角・画質要件が固まった後に比較 |
+
+## 電源・バッテリー候補
+
+| 候補 | 特徴 | 懸念 | 確認タスク |
+| --- | --- | --- | --- |
+| Li-ion / LiPo + 保護回路 | 高エネルギー密度で入手しやすい。 | 低温性能、膨張、充放電保護、防水筐体内の熱対策。 | 温度範囲、保護 IC、充電方式 |
+| LiFePO4 | 安全性とサイクル寿命に優れる傾向。 | 電圧レンジ、充電 IC、容量あたりサイズ。 | 電源レギュレータ選定、低温特性 |
+| 一次リチウム電池 | 長期保管・低自己放電に向く。 | 充電不可、ピーク電流対策、廃棄/交換運用。 | LTE ピーク電流を支えるコンデンサ/電源設計 |
+| ソーラー + 充電コントローラ | 電池交換頻度を減らせる。 | 林間サイトの日照不足、積雪、汚れ、盗難、設置方向。 | 日照見積もり、曇天連続日数、過充電保護 |
+
+## SIM / 通信契約の確認事項
+
+- 通信キャリアの設置場所カバレッジ
+- LTE-M、Cat 1、Cat 4 のどれを使うか
+- 1 日 1 枚の画像サイズと月間通信量
+- グローバル IP の要否（通常は不要）
+- 閉域網や固定 IP の要否
+- SIM サイズ、SIM スロット、eSIM 可否
+- 低温・屋外での SIM 接触不良対策
+
+## 初期 BOM ラフ案
+
+### 低消費電力優先 PoC
+
+| 分類 | 候補 |
+| --- | --- |
+| 制御 | ESP32-S3 カメラ開発ボード |
+| 通信 | Quectel BG95 系 LTE-M モジュール評価ボード |
+| カメラ | OV2640/OV5640 系 |
+| 電源 | Li-ion/LiFePO4 + 電源制御 + 電圧測定 |
+| クラウド | S3 + Lambda + Slack Webhook |
+
+### 実装容易性優先 PoC
+
+| 分類 | 候補 |
+| --- | --- |
+| 制御 | Raspberry Pi Zero 2 W |
+| 通信 | LTE HAT / USB LTE モデム |
+| カメラ | Raspberry Pi Camera Module 3 |
+| 電源 | 大容量バッテリー + 外部 RTC 電源制御 |
+| クラウド | Python + boto3 + S3 + Lambda/Slack |
+
+## 参考リンク（初期調査）
+
+- Espressif ESP32-S3-EYE: https://www.espressif.com/en/products/devkits/esp32-s3-eye/overview
+- Espressif ESP32-S3-EYE User Guide: https://documentation.espressif.com/esp-who/master/docs/en/get-started/ESP32-S3-EYE_Getting_Started_Guide.md
+- Raspberry Pi Camera Module 3: https://www.raspberrypi.com/products/camera-module-3/
+- Raspberry Pi Camera Module 3 Product Brief: https://datasheets.raspberrypi.com/camera/camera-module-3-product-brief.pdf
+- Quectel BG95: https://www.quectel.com/product/lpwa-bg95-cat-m1-cat-nb2-egprs-series/
+- SIMCom SIM7600NA: https://www.simcom.com/product/SIM7600NAG.html
+- Particle Boron Datasheet: https://docs.particle.io/reference/datasheets/b-series/boron-datasheet/
+
+## 次に決めること
+
+1. 設置予定地で主要キャリアの LTE 電波を測定する。
+2. 必要画質と画像サイズを決める。
+3. 目標電池交換間隔を決める。
+4. ソーラー利用の有無を決める。
+5. PoC を「低消費電力優先」か「実装容易性優先」どちらで開始するか決める。
