@@ -109,6 +109,39 @@
 | 電源 | 大容量バッテリー + 外部 RTC 電源制御 |
 | クラウド | Python + boto3 + S3 + Lambda/Slack |
 
+## 低消費電力優先 PoC 購入リンク候補（Amazon）
+
+2026-06-20 時点で Amazon.co.jp から購入候補を探した初期リスト。価格、在庫、販売元、技適/認証、付属品は変わるため、購入直前に商品ページとデータシートを再確認する。特に LTE モジュール、アンテナ、SIM、Li-ion 充電池は国内利用条件と安全性を必ず確認する。
+
+### 要件に対応する主要パーツ
+
+| 分類 | Amazon 候補 | 用途・確認ポイント |
+| --- | --- | --- |
+| マイコン / SBC | [ESP32-S3 ETH Development Board + OV2640 Camera](https://www.amazon.co.jp/-/en/Waveshare-ESP32-S3-development-Ethernet-processor/dp/B0DKJ7CMNW) | ESP32-S3 系カメラ開発ボード候補。PoC では Ethernet/PoE 部分は必須ではないため、カメラ接続、消費電力、GPIO 数、microSD 追加可否を確認する。 |
+| LTE/4G 通信モジュール | [Waveshare BG95-M3 Zero / BG95 EVB 開発ボード](https://www.amazon.co.jp/QuecPython-%E7%94%A8%E3%81%AB%E8%A8%AD%E8%A8%88%E3%81%95%E3%82%8C%E3%81%9F-%E9%96%8B%E7%99%BA%E3%83%9C%E3%83%BC%E3%83%89%E3%80%81%E4%BD%8E%E6%B6%88%E8%B2%BB%E9%9B%BB%E5%8A%9B%E3%80%81LTE-BG95-M3-Zero/dp/B0D4V8MSB8) | Quectel BG95 系候補。LTE Cat M1 / NB-IoT / EGPRS、対応バンド、アンテナ、UART/USB 接続、消費電流、技適/認証を確認する。 |
+| SIM スロット（物理） | [SIM カードソケットブレークアウトボード](https://www.amazon.co.jp/AYASOSO-SIM%E3%82%AB%E3%83%BC%E3%83%89%E3%82%BD%E3%82%B1%E3%83%83%E3%83%88%E3%83%96%E3%83%AC%E3%83%BC%E3%82%AF%E3%82%A2%E3%82%A6%E3%83%88%E3%83%9C%E3%83%BC%E3%83%89%E3%80%81%E3%83%94%E3%83%B3%E3%83%98%E3%83%83%E3%83%80%E3%83%BC%E3%80%81SIM%E3%82%AB%E3%83%BC%E3%83%89%E3%82%A2%E3%83%80%E3%83%97%E3%82%BF%E3%83%BC%E3%83%A2%E3%82%B8%E3%83%A5%E3%83%BC%E3%83%AB%E3%80%81GSM-GPRS-Arduino%E3%80%81Raspberry-Pi%E3%80%81DIY%E9%9B%BB%E5%AD%90%E6%A9%9F%E5%99%A8%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E7%94%A8%E3%80%82/dp/B0G2J4KS9F) | BG95 開発ボードに SIM スロットが搭載されている場合は不要。別基板化や延長配置を検討する場合の候補。SIM 電圧、カードサイズ、配線長を確認する。 |
+| カメラモジュール | [Aideepen OV2640 Camera Module 68° Lens](https://www.amazon.co.jp/-/en/Aideepen-Megapixel-Sensors-ESP-32CAM-STM32F4/dp/B0BVHPFW7J) | OV2640 追加・交換用候補。採用する ESP32-S3 ボードのカメラコネクタ、ピン配置、FPC 向き、レンズ画角との互換性を確認する。 |
+| ローカル保存用ストレージ | [Micro SD TF Card Memory Shield Module](https://www.amazon.co.jp/-/en/5-Piece-Memory-Compatible-Arduino-Adapter/dp/B078NSBDDW) | ESP32-S3 から SPI 接続で画像を保存する候補。電源電圧、レベル変換、CS ピン、書き込み中電源断への耐性を確認する。 |
+| 電源制御基板 | [AOD4184 Isolation MOSFET Module](https://www.amazon.co.jp/-/en/AOD4184-Isolation-Opticoupler-Raspberry-Solenoid/dp/B0G5NNG1VZ) | カメラ、LTE モジュール、ストレージの電源オン/オフ検証用。実運用では待機時消費電流、低サイド/高サイド構成、突入電流、電圧降下を再評価する。 |
+| バッテリー | [KEEPPOWER 18650 充電池セット候補](https://www.amazon.co.jp/18650-%E4%BF%9D%E8%AD%B7%E5%9B%9E%E8%B7%AF%E4%BB%98%E3%81%8D/s?k=18650+%E4%BF%9D%E8%AD%B7%E5%9B%9E%E8%B7%AF%E4%BB%98%E3%81%8D) | Li-ion 充電池候補。PSE、保護回路、容量表記の信頼性、最大放電電流、充電器対応、低温特性を確認する。 |
+| ソーラーパネル / 充電回路 | プロトタイプ製作では使用しない | まずは 1 サイクルの消費電力量を測定し、必要容量が見えてから検討する。 |
+| 防水筐体 / アンテナ / ケーブルグランド | プロトタイプ製作では使用しない | 室内 PoC 後、屋外試験フェーズで防水、アンテナ配置、結露対策と合わせて選定する。 |
+| センサー類（電池電圧、温度、照度など） | プロトタイプ製作では使用しない | 最初の PoC では必須にせず、電池電圧測定や温度ログが必要になった段階で追加する。 |
+
+### プロトタイプ製作で追加購入を検討するもの
+
+| 分類 | Amazon 候補 | 用途・確認ポイント |
+| --- | --- | --- |
+| microSD カード本体 | [Amazon.co.jp microSD カード検索](https://www.amazon.co.jp/s?k=microSD+%E3%82%AB%E3%83%BC%E3%83%89+32GB) | 画像保存用。容量は 32GB 程度から開始し、屋外運用では高耐久/産業用グレードを検討する。 |
+| 18650 電池ボックス | [2 本用 18650 電池ボックス スイッチ付き](https://www.amazon.co.jp/-/en/Azuocn-Battery-Storage-2x18650-Container/dp/B09L54TCQ6) | ベンチ検証用の電池ホルダー。直列/並列、出力電圧、コネクタ形状、逆接続リスクを確認する。 |
+| Li-ion 充電モジュール | [TP4056 Type-C 充電保護モジュール](https://www.amazon.co.jp/-/en/TP4056-Type-C-Charger-Charging-Protection/dp/B0D57XDQV3) | 単セル Li-ion の充電検証用。充電電流、保護回路、発熱、電池仕様との整合を確認する。 |
+| ジャンパワイヤ | [Dupont ジャンパワイヤキット](https://www.amazon.co.jp/-/en/GTIWUNG-Breadboard-Male-Female-Female-Female-Multicolor/dp/B08LD6Z84R) | ESP32-S3、BG95、microSD、MOSFET モジュールの仮配線用。オス/メス混在セットが便利。 |
+| ブレッドボード | [Amazon.co.jp ブレッドボード検索](https://www.amazon.co.jp/s?k=%E3%83%96%E3%83%AC%E3%83%83%E3%83%89%E3%83%9C%E3%83%BC%E3%83%89+Arduino) | はんだ付け前の仮配線用。LTE 通信時の大電流経路には不向きなので、電源ラインは太い配線や端子台を使う。 |
+| USB ケーブル | [Amazon.co.jp USB Type-C ケーブル検索](https://www.amazon.co.jp/s?k=USB+Type-C+%E3%82%B1%E3%83%BC%E3%83%96%E3%83%AB+%E7%9F%AD%E3%81%84) | ESP32-S3、BG95、充電モジュールの給電・書き込み・デバッグ用。必要なコネクタ形状を各ボードで確認する。 |
+| 外部電源アダプタ | [Amazon.co.jp USB AC アダプタ検索](https://www.amazon.co.jp/s?k=USB+AC%E3%82%A2%E3%83%80%E3%83%97%E3%82%BF+5V+3A) | 開発中の安定給電用。LTE モジュールのピーク電流に合わせ、5V 2A〜3A 程度の余裕を持つものを選ぶ。 |
+| テスター | [Amazon.co.jp デジタルマルチメータ検索](https://www.amazon.co.jp/s?k=%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E3%83%9E%E3%83%AB%E3%83%81%E3%83%A1%E3%83%BC%E3%82%BF) | 電池電圧、配線確認、消費電流の簡易測定用。後続の電力測定では USB 電力計やロガーも検討する。 |
+| SIM カード | [Amazon.co.jp IoT SIM 検索](https://www.amazon.co.jp/s?k=IoT+SIM+LTE-M) | LTE-M/Cat M1 対応、通信キャリア、月額費用、データ容量、APN、SMS 要否を確認する。 |
+
 ## 参考リンク（初期調査）
 
 - Espressif ESP32-S3-EYE: https://www.espressif.com/en/products/devkits/esp32-s3-eye/overview
